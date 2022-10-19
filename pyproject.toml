@@ -6,6 +6,9 @@ authors = ["Nikita Golovotyapov <golovotyapov@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
+pydantic = {extras = ["dotenv"], version = "^1.10.2"}
+loguru = "^0.6.0"
+SQLAlchemy = "^1.4.42"
 
 [tool.poetry.dev-dependencies]
 
