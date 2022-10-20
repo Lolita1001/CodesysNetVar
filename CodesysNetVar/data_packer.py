@@ -4,6 +4,7 @@ from codesys.nvl_parser import NvlOptions, NvlDeclarations
 from codesys.data_types import CBool, CByte, CWord, CDWord, CLWord, CInt, CDInt, CLInt, CUInt, CUDInt, CULInt, CReal, \
     CTime, CDate, CString, CArray, CType, CodesysType
 from network.parser import Rcv
+from exeptions import UnsupportedType
 
 
 class CTypeDeclaration(list[CType]):
@@ -72,6 +73,8 @@ class DataPacker:
             case name, base_type, _, type_arr if 'ARRAY' in base_type:
                 start, end = list(map(int, base_type[6:-1].split('..')))  # 'ARRAY[0..4]'
                 return CArray(name, self._get_inst_via_c_type('_', type_arr), end - start + 1)
+            case _:
+                raise UnsupportedType(f'Data type {c_type} is not support')
 
     def put_data(self, rcv: Rcv):
         try:

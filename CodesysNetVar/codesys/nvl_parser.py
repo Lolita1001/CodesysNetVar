@@ -7,7 +7,8 @@ from pydantic import BaseModel
 from loguru import logger
 import xml.etree.ElementTree as Et
 
-from exeptions import ListIdMustBeUniq, AcknowledgeMustBeUniq, ChecksumMustBeUniq
+from exeptions import ListIdMustBeUniq, AcknowledgeMustBeUniq, ChecksumMustBeUniq, IpAndPortWrong
+from settings.settings import settings
 
 
 class NvlDeclarations(TypedDict, total=False):
@@ -98,6 +99,8 @@ class NvlParser:
             raise ChecksumMustBeUniq('Attribute "Checksum" must be False')
         if not options.pack:
             logger.warning('Recommended set attribute "Pack" for more speed communication')
+        if options.ip_address != settings.network.local_ip or options.port != settings.network.local_port:
+            raise IpAndPortWrong('IP address and port must be equal from .env and NVLs config')
 
     @classmethod
     def check_uniq_list_id(cls, list_id):

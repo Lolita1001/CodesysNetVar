@@ -22,7 +22,7 @@ END_VAR]]></Declarations>
     <EventVariable>
     </EventVariable>
     <ProtocolSettings>
-      <ProtocolSetting Name="Broadcast Adr." Value="192.168.56.1" />
+      <ProtocolSetting Name="Broadcast Adr." Value="127.0.0.1" />
       <ProtocolSetting Name="Port" Value="1202" />
     </ProtocolSettings>
   </NetvarSettings>

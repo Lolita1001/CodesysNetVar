@@ -2,7 +2,7 @@ from typing import Any, Literal
 from ipaddress import IPv4Address
 from pathlib import Path
 
-from pydantic import BaseSettings, Field, FilePath, SecretStr
+from pydantic import BaseSettings, Field, FilePath
 
 
 BASE_DIRECTORY = Path(__file__).parent
@@ -10,8 +10,8 @@ BASE_DIRECTORY = Path(__file__).parent
 
 class Settings(BaseSettings):
     class Network(BaseSettings):
-        ip: IPv4Address = Field('192.168.56.1', env="LOCAL_IP")
-        port: int = Field(1202, env="LOCAL_PORT")
+        local_ip: IPv4Address = Field('127.0.0.1')
+        local_port: int = Field(1202)
 
         class Config:
             env_prefix = "CNV_NETWORK___"
@@ -26,13 +26,24 @@ class Settings(BaseSettings):
         db_name: str = Field('mydb')
         table_name_prefix: str = Field('nvl')
 
+        @property
+        def url(self) -> str:
+            match self.db_type:
+                case _:
+                    pass
+            return f"mongodb://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
+
+        @property
+        def is_setup(self):
+            return all([self.db_type, self.address_or_path])
+
         class Config:
             env_prefix = "CNV_STORAGE___"
             env_file = BASE_DIRECTORY.joinpath('.env')
             secrets_dir = BASE_DIRECTORY.joinpath('secrets/')
 
     class NVL(BaseSettings):
-        path: list[FilePath] = Field(['external/exp.gvl'])
+        paths: list[FilePath] = Field(['external/exp.gvl'])
 
         class Config:
             env_prefix = "CNV_NVL___"

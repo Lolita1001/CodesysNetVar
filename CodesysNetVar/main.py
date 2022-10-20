@@ -1,10 +1,11 @@
 import sys
 import queue
+from typing import TypeAlias
 
 from loguru import logger
 
 from settings.settings import settings
-from codesys.nvl_parser import NvlParser
+from codesys.nvl_parser import NvlParser, NvlOptions
 from network.server import get_udp_thread_server, QueueMessage
 from network.parser import Rcv
 from data_packer import DataPacker
@@ -18,21 +19,43 @@ if settings.logger.level_in_file:
 
 logger.debug('Run application...')
 
-nvl_config = NvlParser(settings.nvl.path[0]).parse()
 
-dp = DataPacker(nvl_config)
+ListID: TypeAlias = int
 
-q = queue.Queue(100)
 
-udp_server_thread = get_udp_thread_server(settings, nvl_config, q)
-udp_server_thread.start()
+class Main:
+    def __init__(self):
+        self.nvl_configs = self.create_nvl_configs(settings.nvl.paths)
+        self.data_packers = self.create_data_packers(self.nvl_configs)
+        self.mq_from_client = queue.Queue(100)
+        self.udp_server_thread = get_udp_thread_server(self.mq_from_client)
 
-while True:
-    data: QueueMessage = q.get()
-    logger.debug(data)
+    @staticmethod
+    def create_nvl_configs(nvl_paths) -> dict[ListID, NvlOptions]:
+        nvl_configs = {}
+        for path in nvl_paths:
+            nvl_config = NvlParser(path).parse()
+            nvl_configs[nvl_config.list_id] = nvl_config
+        return nvl_configs
 
-    rcv = Rcv(message=data.message, client=data.client)
-    dp.put_data(rcv)
+    @staticmethod
+    def create_data_packers(nvl_configs: dict[ListID, NvlOptions]) -> dict[ListID, DataPacker]:
+        data_packers = {}
+        for list_id, config in nvl_configs.items():
+            dp = DataPacker(config)
+            data_packers[list_id] = dp
+        return data_packers
 
-    q.task_done()
-    logger.debug(dp)
+    def run(self):
+        self.udp_server_thread.start()
+        while True:
+            data_from_client: QueueMessage = self.mq_from_client.get()
+            logger.debug(data_from_client)
+            rcv = Rcv(message=data_from_client.message, client=data_from_client.client)
+            self.data_packers[rcv.id_list].put_data(rcv)
+            self.mq_from_client.task_done()
+
+
+if __name__ == '__main__':
+    app = Main()
+    app.run()
