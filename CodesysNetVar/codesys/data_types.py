@@ -1,6 +1,7 @@
 import abc
 import datetime
 import struct
+from typing import TypeVar
 
 
 from sqlalchemy import Boolean, LargeBinary, Integer, BigInteger, Float, Date, String, ARRAY
@@ -9,15 +10,24 @@ from sqlalchemy import Boolean, LargeBinary, Integer, BigInteger, Float, Date, S
 class CType:
     def __init__(self, name: str):
         self.name = name
+        self.size: int | None = None
         self.value = None
-        self.ts = None
+        self.ts: datetime.datetime | None = None
 
     @abc.abstractmethod
     def put(self, value: bytes):
         pass
 
+    def clear(self):
+        self.size = None
+        self.value = None
+        self.ts = None
+
     def __repr__(self):
         return f'{self.ts}| {self.name} : {self.__class__.__name__} := {self.value}'
+
+
+CodesysType = TypeVar('CodesysType', bound=CType)
 
 
 class CBool(CType):
@@ -177,4 +187,3 @@ class CArray(CType):
             self.value.append(self.c_type.value)
             start += self.c_type.size
         self.ts = datetime.datetime.now()
-
