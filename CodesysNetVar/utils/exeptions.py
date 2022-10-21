@@ -20,3 +20,7 @@ class PacketWrongLen(ValueError):
 
 class UnsupportedType(TypeError):
     """Data type is not supported"""
+
+
+class NodeNotFound(ValueError):
+    """Node not found"""

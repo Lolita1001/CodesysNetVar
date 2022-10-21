@@ -1,5 +1,6 @@
 import queue
 from typing import TypeAlias
+from pathlib import Path
 
 from loguru import logger
 
@@ -17,14 +18,14 @@ ListID: TypeAlias = int
 
 
 class Main:
-    def __init__(self):
+    def __init__(self) -> None:
         self.nvl_configs = self.create_nvl_configs(settings.nvl.paths)
         self.data_packers = self.create_data_packers(self.nvl_configs)
-        self.mq_from_client = queue.Queue(100)
+        self.mq_from_client: queue.Queue = queue.Queue(100)
         self.udp_server_thread = get_udp_thread_server(self.mq_from_client)
 
     @staticmethod
-    def create_nvl_configs(nvl_paths) -> dict[ListID, NvlOptions]:
+    def create_nvl_configs(nvl_paths: list[Path]) -> dict[ListID, NvlOptions]:
         nvl_configs = {}
         for path in nvl_paths:
             nvl_config = NvlParser(path).parse()
@@ -41,19 +42,21 @@ class Main:
 
     def run(self) -> None:
         self.udp_server_thread.start()
-        logger.info('The UDP server starting')
+        logger.info("The UDP server starting")
         while True:
             data_from_client: QueueMessage = self.mq_from_client.get()
-            logger.debug(f'Get 1 message from the queue and queue has '
-                         f'{self.mq_from_client.qsize()}/{self.mq_from_client.maxsize}')
+            logger.debug(
+                f"Get 1 message from the queue and queue has "
+                f"{self.mq_from_client.qsize()}/{self.mq_from_client.maxsize}"
+            )
             logger.debug(data_from_client)
             rcv = Rcv(message=data_from_client.message, client=data_from_client.client)
-            logger.debug(f'Result of parsing the message:\n{rcv.print()}')
+            logger.debug(f"Result of parsing the message:\n{rcv.print()}")
             self.data_packers[rcv.id_list].put_data(rcv)
             self.mq_from_client.task_done()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         app = Main()
         app.run()

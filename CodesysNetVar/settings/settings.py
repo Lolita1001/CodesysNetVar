@@ -10,12 +10,12 @@ BASE_DIRECTORY = Path(__file__).parent
 
 class AdvancedSettings(BaseSettings):
     class Config:
-        env_file = BASE_DIRECTORY.joinpath('.env')
-        secrets_dir = BASE_DIRECTORY.joinpath('secrets/')
+        env_file = BASE_DIRECTORY.joinpath(".env")
+        secrets_dir = BASE_DIRECTORY.joinpath("secrets/")
 
 
 class Network(AdvancedSettings):
-    local_ip: IPv4Address = Field('127.0.0.1')
+    local_ip: IPv4Address = Field(IPv4Address("127.0.0.1"))
     local_port: int = Field(1202)
 
     class Config:
@@ -23,21 +23,23 @@ class Network(AdvancedSettings):
 
 
 class Storage(AdvancedSettings):
-    db_type: str | None = Field(None)
+    db_type: Literal["postgresql", "sqlite3"] | None = Field(None)
     ip_or_path: IPv4Address | FilePath | None = Field(None)
     port: int = Field(5432)
-    login: str = Field('user')
-    password: str = Field('')
-    db_name: str = Field('mydb')
-    table_name_prefix: str = Field('nvl')
+    login: str = Field("user")
+    password: str = Field("")
+    db_name: str = Field("mydb")
+    table_name_prefix: str = Field("nvl")
 
     @property
     def url(self) -> str:
         match self.db_type:
-            case 'postgresql':
-                return f'postgresql://{self.login}:{self.password}@{self.ip_or_path}:{self.port}/{self.db_name}'
-            case 'sqlite3':
-                return f'sqlite://{self.ip_or_path}'
+            case "postgresql":
+                return f"postgresql://{self.login}:{self.password}@{self.ip_or_path}:{self.port}/{self.db_name}"
+            case "sqlite3":
+                return f"sqlite://{self.ip_or_path}"
+            case _:
+                return ""
 
     @property
     def is_setup(self) -> bool:
@@ -48,16 +50,16 @@ class Storage(AdvancedSettings):
 
 
 class NVL(AdvancedSettings):
-    paths: list[FilePath] = Field(['external/exp.gvl'])
+    paths: list[FilePath] = Field(["external/exp.gvl"])
 
     class Config:
         env_prefix = "CNV_NVL___"
 
 
 class Logger(AdvancedSettings):
-    level_in_stdout: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR'] | None = Field('DEBUG')
-    level_in_file: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR'] | None = Field(None)
-    file_rotate: Any = Field('1 MB')  # not validate
+    level_in_stdout: Literal["DEBUG", "INFO", "WARNING", "ERROR"] | None = Field("DEBUG")
+    level_in_file: Literal["DEBUG", "INFO", "WARNING", "ERROR"] | None = Field(None)
+    file_rotate: Any = Field("1 MB")  # not validate
 
     class Config:
         env_prefix = "CNV_LOGGER___"
@@ -74,6 +76,6 @@ logger.info("Start get env parameters")
 settings = Settings()
 logger.info("List of env variables:")
 logger.info(settings.network.dict())
-logger.info(settings.storage.dict(exclude={'password'}))
+logger.info(settings.storage.dict(exclude={"password"}))
 logger.info(settings.nvl.dict())
 logger.info(settings.logger.dict())

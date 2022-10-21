@@ -11,7 +11,7 @@ from sqlalchemy.types import TypeEngine
 class CType:
     def __init__(self, name: str):
         self.name = name
-        self.size: int | None = None
+        self.size: int = 0
         self.value: Any = None
         self.sql_alchemy_type: TypeEngine | None = None
         self.ts: datetime.datetime | None = None
@@ -21,12 +21,15 @@ class CType:
         pass
 
     def clear(self) -> None:
-        self.size = None
+        self.size = 0
         self.value = None
         self.ts = None
 
     def __repr__(self) -> str:
-        return f'{self.ts}| {self.name} : {self.__class__.__name__} := {self.value}'
+        return f"{self.ts}| {self.name} : {self.__class__.__name__} := {self.value}"
+
+
+CodesysType = TypeVar("CodesysType", bound=CType)
 
 
 class CBool(CType):
@@ -36,7 +39,7 @@ class CBool(CType):
         self.sql_alchemy_type = Boolean
 
     def put(self, value: bytes) -> None:
-        self.value = bool.from_bytes(value, 'little')
+        self.value = bool.from_bytes(value, "little")
         self.ts = datetime.datetime.now()
 
 
@@ -79,7 +82,7 @@ class CInt(CType):
         self.sql_alchemy_type = Integer
 
     def put(self, value: bytes) -> None:
-        self.value = int.from_bytes(value, 'little')
+        self.value = int.from_bytes(value, "little")
         self.ts = datetime.datetime.now()
 
 
@@ -125,7 +128,7 @@ class CReal(CType):
         self.sql_alchemy_type = Float
 
     def put(self, value: bytes) -> None:
-        self.value = struct.unpack('f', value)[0]
+        self.value = struct.unpack("f", value)[0]
         self.ts = datetime.datetime.now()
 
 
@@ -143,7 +146,7 @@ class CTime(CType):
         self.sql_alchemy_type = Integer
 
     def put(self, value: bytes) -> None:
-        self.value = int.from_bytes(value, 'little')
+        self.value = int.from_bytes(value, "little")
         self.ts = datetime.datetime.now()
 
 
@@ -154,24 +157,24 @@ class CDate(CType):
         self.sql_alchemy_type = Date
 
     def put(self, value: bytes) -> None:
-        n_seconds = int.from_bytes(value, 'little')
+        n_seconds = int.from_bytes(value, "little")
         self.value = datetime.date.fromtimestamp(0) + datetime.timedelta(seconds=n_seconds)
         self.ts = datetime.datetime.now()
 
 
 class CString(CType):
-    def __init__(self, name: str, size=None):
+    def __init__(self, name: str, size: int):
         super().__init__(name)
-        self.size = size+1
+        self.size = size + 1
         self.sql_alchemy_type = String
 
     def put(self, value: bytes) -> None:
-        self.value = value[:value.find(b'\x00')].decode("ascii")
+        self.value = value[: value.find(b"\x00")].decode("ascii")
         self.ts = datetime.datetime.now()
 
 
 class CArray(CType):
-    def __init__(self, name: str, c_type=None, count=None):
+    def __init__(self, name: str, c_type: CodesysType, count: int):
         super().__init__(name)
         self.c_type = c_type
         self.count = count
@@ -182,18 +185,15 @@ class CArray(CType):
         start = 0
         self.value = []
         for _ in range(self.count):
-            self.c_type.put(value[start:start + self.c_type.size])
+            self.c_type.put(value[start: start + self.c_type.size])
             self.value.append(self.c_type.value)
             start += self.c_type.size
         self.ts = datetime.datetime.now()
 
 
-CodesysType = TypeVar('CodesysType', bound=CType)
-
-
 class CTypeDeclaration(list[CType]):
-    def append(self, obj) -> None:
-        assert issubclass(obj.__class__, CType), 'Appended object is not subclass of Codesys'
+    def append(self, obj: CodesysType) -> None:
+        assert issubclass(obj.__class__, CType), "Appended object is not subclass of Codesys"
         super().append(obj)  # noqa
 
     def get_via_name(self, name: str) -> CType | None:
