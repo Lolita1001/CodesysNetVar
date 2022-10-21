@@ -44,7 +44,8 @@ class Main:
         logger.info('The UDP server starting')
         while True:
             data_from_client: QueueMessage = self.mq_from_client.get()
-            logger.debug(f'Get 1 message from the queue and queue has {self.mq_from_client.qsize()}/{self.mq_from_client.maxsize}')
+            logger.debug(f'Get 1 message from the queue and queue has '
+                         f'{self.mq_from_client.qsize()}/{self.mq_from_client.maxsize}')
             logger.debug(data_from_client)
             rcv = Rcv(message=data_from_client.message, client=data_from_client.client)
             logger.debug(f'Result of parsing the message:\n{rcv.print()}')
@@ -53,5 +54,8 @@ class Main:
 
 
 if __name__ == '__main__':
-    app = Main()
-    app.run()
+    try:
+        app = Main()
+        app.run()
+    except Exception as ex:
+        logger.exception(ex)
