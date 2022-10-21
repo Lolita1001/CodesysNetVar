@@ -24,3 +24,14 @@ class Rcv:
     def check_packet(self, message) -> None:
         if len(message) != self.count_bytes:
             raise PacketWrongLen('The receive packet has wrong len')
+
+    def print(self):
+        text = f"""Unknown data {self._constant}
+ID list: {self.id_list}
+Number of packets in unpacked data: {self.n_package_in_list}
+Number of variables in the package: {self.count_variable_in_packet}
+Package length: {self.count_bytes}
+Common Packet number: {self.n_sends}
+Data: {self.data_raw}
+"""
+        return text

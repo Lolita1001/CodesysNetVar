@@ -9,6 +9,7 @@ python = "^3.10"
 pydantic = {extras = ["dotenv"], version = "^1.10.2"}
 loguru = "^0.6.0"
 SQLAlchemy = "^1.4.42"
+psycopg2 = "^2.9.4"
 
 [tool.poetry.dev-dependencies]
 

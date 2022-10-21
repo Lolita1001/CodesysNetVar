@@ -25,6 +25,7 @@ def _get_handler_with_settings(mq_from_client: queue.Queue):
             logger.debug(f'Client {self.client_address} said: {msg}')
             qm = QueueMessage(client=self.client_address, message=msg)
             self.mq_from_client.put(qm)
+            logger.debug(f'Queue has {self.mq_from_client.qsize()}/{self.mq_from_client.maxsize} messages')
             # if False:
             #     sock.sendto("Got your message!".encode(), self.client_address)  # Send acknowledge  # todo acknowledge
     return Handler
@@ -33,6 +34,7 @@ def _get_handler_with_settings(mq_from_client: queue.Queue):
 def get_udp_thread_server(mq_from_client: queue.Queue) -> threading.Thread:
     _handler = _get_handler_with_settings(mq_from_client)
     _upd_server = ThreadingUDPServer((str(settings.network.local_ip), settings.network.local_port), _handler)
+    logger.info(f'Create UDP server on {settings.network.local_ip}:{settings.network.local_port}')
     udp_server_thread = threading.Thread(target=_upd_server.serve_forever)
     udp_server_thread.daemon = True
     return udp_server_thread

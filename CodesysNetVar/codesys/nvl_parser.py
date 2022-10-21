@@ -31,7 +31,7 @@ class NvlParser:
 
     def __init__(self, path: Path | list[Path]):
         """
-        Parser NVL configuration file. Parse file and get variables from declarations and some settings
+        Parser NVL configuration file. Parse file and get settings and declarations
         :param path: path to the nvl configuration file
         """
         self._path: Path = path
@@ -86,13 +86,12 @@ class NvlParser:
         nvl_options = NvlOptions.parse_obj(parse_result)
         self.check_settings(nvl_options)
         self.check_uniq_list_id(nvl_options.list_id)
+        logger.info(f'Result parse of nvl file "{self._path}":')
+        logger.info(nvl_options)
         return nvl_options
 
     @staticmethod
     def check_settings(options: NvlOptions) -> None:
-        """
-        :return None or AttributeError
-        """
         if options.acknowledge:
             raise AcknowledgeMustBeUniq('Attribute "Acknowledge" must be False')
         if options.checksum:

@@ -7,7 +7,7 @@
 	my_time : TIME;
 	my_date : DATE;
 	my_string20 : STRING(20);
-	testlist : ARRAY[0..4] OF INT;
+	my_array : ARRAY[0..4] OF INT;
 END_VAR]]></Declarations>
   <NetvarSettings Protocol="UDP">
     <ListIdentifier>1</ListIdentifier>
@@ -22,7 +22,7 @@ END_VAR]]></Declarations>
     <EventVariable>
     </EventVariable>
     <ProtocolSettings>
-      <ProtocolSetting Name="Broadcast Adr." Value="127.0.0.1" />
+      <ProtocolSetting Name="Broadcast Adr." Value="192.168.56.1" />
       <ProtocolSetting Name="Port" Value="1202" />
     </ProtocolSettings>
   </NetvarSettings>

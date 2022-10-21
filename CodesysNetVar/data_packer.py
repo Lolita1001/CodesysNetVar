@@ -16,7 +16,7 @@ class DataPacker:
         """
         self.nvl = nvl
         self.c_types_declarations = self.generate_instance_datatype(self.nvl.declarations)
-        self.orm_model = create_table_and_orm_class(self.nvl.list_id, self.c_types_declarations)
+        self.OrmModel = create_table_and_orm_class(self.nvl.list_id, self.c_types_declarations)
         # logger.debug(self)
 
     def generate_instance_datatype(self, declaration: list[NvlDeclarations]) -> CTypeDeclaration:
@@ -68,32 +68,35 @@ class DataPacker:
     def put_data(self, rcv: Rcv) -> None:
         try:
             if self.nvl.pack:
-                self._put_data_pack(rcv.data_raw)
+                is_last_packet = self._put_data_pack(rcv.data_raw)
             else:
-                self._put_data_unpack(rcv.n_package_in_list, rcv.data_raw)
+                is_last_packet = self._put_data_unpack(rcv.n_package_in_list, rcv.data_raw)
+            logger.debug(f'DataPacker of {self.nvl.list_id} ID list: The data are put in Codesys class instances')
+            logger.debug('\n'.join([c_type.__repr__() for c_type in self.c_types_declarations]))
+            if is_last_packet and self.OrmModel:
+                self.write_to_orm()
         except Exception as ex:
             logger.exception(ex)
             self.clear_data()
 
-    def _put_data_unpack(self, number: int, data_raw: bytes) -> None:
+    def _put_data_unpack(self, number: int, data_raw: bytes) -> bool:
         self.c_types_declarations[number].put(data_raw)
-        if number + 1 == self.c_types_declarations.__len__() and \
-                all([c_type.value for c_type in self.c_types_declarations]):
-            self.write_to_orm()
+        return number + 1 == self.c_types_declarations.__len__() and all([c_type.value for c_type in
+                                                                          self.c_types_declarations])
 
-    def _put_data_pack(self, r_data: bytes) -> None:
+    def _put_data_pack(self, r_data: bytes) -> bool:
         start = 0
         for c_type in self.c_types_declarations:
             c_type.put(r_data[start:start + c_type.size])
             start += c_type.size
-        self.write_to_orm()
+        return True
 
     def write_to_orm(self) -> None:
-        if not self.orm_model:
-            return None
+        orm_model = self.OrmModel()
         for c_type in self.c_types_declarations:
-            self.orm_model.update_value(c_type)
-        self.orm_model.write_to_db()
+            orm_model.update_value(c_type)
+        logger.debug(f'Start writing orm class to DB')
+        orm_model.write_to_db()
 
     def clear_data(self) -> None:
         for c_type in self.c_types_declarations:

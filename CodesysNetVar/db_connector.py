@@ -3,6 +3,7 @@ from typing import TypeAlias
 from sqlalchemy import Table, Column, Integer, MetaData, create_engine, DateTime
 from sqlalchemy.orm import mapper, create_session
 from sqlalchemy.sql import func
+from loguru import logger
 
 from settings.settings import settings
 from codesys.data_types import CodesysType, CTypeDeclaration
@@ -32,11 +33,13 @@ def create_table_and_orm_class(list_id: ListID, c_types_declarations: CTypeDecla
         def write_to_db(self):
             session.add(self)
             session.commit()
-            session.refresh(self)
+            logger.debug(f'Write to DB is done')
+            logger.debug({param: value for param, value in self.__dict__.items() if param[0] != '_'})
 
     t = Table(f'{settings.storage.table_name_prefix}_{list_id}', metadata, Column('id', Integer, primary_key=True),
               Column('ts', DateTime(timezone=True), default=func.now()),
               *(Column(c_type.name, c_type.sql_alchemy_type) for c_type in c_types_declarations))
-    metadata.create_all(tables=t)
+    metadata.create_all(tables=[t])
+    logger.info('Created ' + t.__repr__())
     mapper(Record, t)
-    return Record()
+    return Record

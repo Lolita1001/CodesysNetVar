@@ -1,9 +1,9 @@
-import sys
 import queue
 from typing import TypeAlias
 
 from loguru import logger
 
+from utils.loger_setup import loger_setup
 from settings.settings import settings
 from codesys.nvl_parser import NvlParser, NvlOptions
 from network.server import get_udp_thread_server, QueueMessage
@@ -11,14 +11,7 @@ from network.parser import Rcv
 from data_packer import DataPacker
 
 
-logger.remove()
-if settings.logger.level_in_stdout:
-    logger.add(sys.stdout, level=settings.logger.level_in_stdout)
-if settings.logger.level_in_file:
-    logger.add('rotation_log.log', level=settings.logger.level_in_file, rotation=settings.logger.file_rotate)
-
-logger.debug('Run application...')
-
+loger_setup()
 
 ListID: TypeAlias = int
 
@@ -48,10 +41,13 @@ class Main:
 
     def run(self) -> None:
         self.udp_server_thread.start()
+        logger.info('The UDP server starting')
         while True:
             data_from_client: QueueMessage = self.mq_from_client.get()
+            logger.debug(f'Get 1 message from the queue and queue has {self.mq_from_client.qsize()}/{self.mq_from_client.maxsize}')
             logger.debug(data_from_client)
             rcv = Rcv(message=data_from_client.message, client=data_from_client.client)
+            logger.debug(f'Result of parsing the message:\n{rcv.print()}')
             self.data_packers[rcv.id_list].put_data(rcv)
             self.mq_from_client.task_done()
 
