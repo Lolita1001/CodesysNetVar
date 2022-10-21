@@ -46,7 +46,7 @@ class Main:
             data_packers[list_id] = dp
         return data_packers
 
-    def run(self):
+    def run(self) -> None:
         self.udp_server_thread.start()
         while True:
             data_from_client: QueueMessage = self.mq_from_client.get()

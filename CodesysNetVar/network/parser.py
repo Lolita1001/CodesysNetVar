@@ -1,4 +1,4 @@
-from exeptions import PacketWrongLen
+from utils.exeptions import PacketWrongLen
 
 
 class Rcv:
@@ -21,6 +21,6 @@ class Rcv:
         self.data_raw = message[20:]
         self.check_packet(message)
 
-    def check_packet(self, message):
+    def check_packet(self, message) -> None:
         if len(message) != self.count_bytes:
             raise PacketWrongLen('The receive packet has wrong len')

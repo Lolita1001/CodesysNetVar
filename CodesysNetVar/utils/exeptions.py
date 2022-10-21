@@ -19,4 +19,4 @@ class PacketWrongLen(ValueError):
 
 
 class UnsupportedType(TypeError):
-    """Data type is not support"""
+    """Data type is not supported"""

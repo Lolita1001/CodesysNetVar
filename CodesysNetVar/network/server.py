@@ -20,7 +20,7 @@ def _get_handler_with_settings(mq_from_client: queue.Queue):
             self.mq_from_client = _mq_from_client
             super().__init__(request, client_address, server)
 
-        def handle(self):
+        def handle(self) -> None:
             msg, sock = self.request
             logger.debug(f'Client {self.client_address} said: {msg}')
             qm = QueueMessage(client=self.client_address, message=msg)
@@ -30,7 +30,7 @@ def _get_handler_with_settings(mq_from_client: queue.Queue):
     return Handler
 
 
-def get_udp_thread_server(mq_from_client: queue.Queue):
+def get_udp_thread_server(mq_from_client: queue.Queue) -> threading.Thread:
     _handler = _get_handler_with_settings(mq_from_client)
     _upd_server = ThreadingUDPServer((str(settings.network.local_ip), settings.network.local_port), _handler)
     udp_server_thread = threading.Thread(target=_upd_server.serve_forever)

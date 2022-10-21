@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     class Storage(BaseSettings):
         db_type: str | None = Field(None)
-        address_or_path: IPv4Address | FilePath | None = Field(None)
+        ip_or_path: IPv4Address | FilePath | None = Field(None)
         port: int = Field(5432)
         login: str = Field('user')
         password: str = Field('')
@@ -29,13 +29,14 @@ class Settings(BaseSettings):
         @property
         def url(self) -> str:
             match self.db_type:
-                case _:
-                    pass
-            return f"mongodb://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
+                case 'postgresql':
+                    return f'postgresql://{self.login}:{self.password}@{self.ip_or_path}:{self.port}/{self.db_name}'
+                case 'sqlite3':
+                    return f'sqlite://{self.ip_or_path}'
 
         @property
-        def is_setup(self):
-            return all([self.db_type, self.address_or_path])
+        def is_setup(self) -> bool:
+            return True if self.ip_or_path and self.db_type else False
 
         class Config:
             env_prefix = "CNV_STORAGE___"
@@ -50,8 +51,8 @@ class Settings(BaseSettings):
             env_file = BASE_DIRECTORY.joinpath('.env')
 
     class Logger(BaseSettings):
-        level_in_stdout: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR', 'NONE'] | None = Field('DEBUG')
-        level_in_file: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR', 'NONE'] | None = Field(None)
+        level_in_stdout: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR'] | None = Field('DEBUG')
+        level_in_file: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR'] | None = Field(None)
         file_rotate: Any = Field('1 MB')  # not validate
 
         class Config:

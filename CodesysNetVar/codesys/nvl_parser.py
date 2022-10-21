@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from loguru import logger
 import xml.etree.ElementTree as Et
 
-from exeptions import ListIdMustBeUniq, AcknowledgeMustBeUniq, ChecksumMustBeUniq, IpAndPortWrong
+from utils.exeptions import ListIdMustBeUniq, AcknowledgeMustBeUniq, ChecksumMustBeUniq, IpAndPortWrong
 from settings.settings import settings
 
 
@@ -103,7 +103,7 @@ class NvlParser:
             raise IpAndPortWrong('IP address and port must be equal from .env and NVLs config')
 
     @classmethod
-    def check_uniq_list_id(cls, list_id):
+    def check_uniq_list_id(cls, list_id) -> None:
         if list_id in cls.list_id:
             raise ListIdMustBeUniq("List id in NVL settings must be uniq")
         cls.list_id.append(list_id)
