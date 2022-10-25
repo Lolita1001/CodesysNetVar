@@ -24,3 +24,7 @@ class UnsupportedType(TypeError):
 
 class NodeNotFound(ValueError):
     """Node not found"""
+
+
+class DataWrongLen(ValueError):
+    """The data has different length for this Data type"""
