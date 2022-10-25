@@ -4,7 +4,7 @@ import struct
 from typing import TypeVar, Any
 
 
-from sqlalchemy import Boolean, LargeBinary, Integer, BigInteger, Float, Date, String, ARRAY
+from sqlalchemy import Boolean, LargeBinary, Integer, BigInteger, Float, Date, String, ARRAY, Time
 from sqlalchemy.types import TypeEngine
 
 from utils.exeptions import DataWrongLen
@@ -155,10 +155,14 @@ class CTime(CType):
     def __init__(self, name: str):
         super().__init__(name)
         self.size = 4
-        self.sql_alchemy_type = Integer
+        self.sql_alchemy_type = Time
 
     def _put(self, value: bytes) -> None:
-        self.value = int.from_bytes(value, "little")
+        int_value = int.from_bytes(value, "little")
+        hour = int_value // 3600
+        minute = (int_value - hour * 3600) // 60
+        second = int_value % 60
+        self.value = datetime.time(hour=hour, minute=minute, second=second)
         self.ts = datetime.datetime.now()
 
 
