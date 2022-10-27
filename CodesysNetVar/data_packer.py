@@ -77,7 +77,7 @@ class DataPacker:
             case name, other if "STRING" in other:
                 size = int(other[7:-1])  # 'STRING(20)'
                 return CString(name, size)
-            case name, base_type, _, type_arr if "ARRAY" in base_type:
+            case name, base_type, type_arr if "ARRAY" in base_type:
                 start, end = list(map(int, base_type[6:-1].split("..")))  # 'ARRAY[0..4]'
                 return CArray(name, self._get_inst_via_c_type("_", type_arr), end - start + 1)
             case _:
