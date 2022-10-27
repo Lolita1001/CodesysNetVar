@@ -1,3 +1,4 @@
+import os
 import ipaddress
 
 from typing import TypedDict, Any
@@ -7,7 +8,8 @@ from pydantic import BaseModel
 from loguru import logger
 import xml.etree.ElementTree as Et
 
-from utils.exeptions import ListIdMustBeUniq, AcknowledgeMustBeUniq, ChecksumMustBeUniq, IpAndPortWrong, NodeNotFound
+from utils.exeptions import ListIdMustBeUniq, AcknowledgeMustBeFalse, ChecksumMustBeFalse, IpAndPortWrong, \
+    NodeNotFound, NVLFileNotFound
 from settings.settings import settings
 
 
@@ -34,7 +36,8 @@ class NvlParser:
         Parser NVL configuration file. Parse file and get settings and declarations
         :param path: path to the nvl configuration file
         """
-        self._path = path
+        if self.is_file_exist(path):
+            self._path = path
 
     @staticmethod
     def get_root_of_tree(path: Path) -> Et.Element:
@@ -109,11 +112,17 @@ class NvlParser:
         return nvl_options
 
     @staticmethod
+    def is_file_exist(path: Path) -> bool:
+        if not os.path.exists(path):
+            raise NVLFileNotFound(f"File {path} not found")
+        return True
+
+    @staticmethod
     def check_settings(options: NvlOptions) -> None:
         if options.acknowledge:
-            raise AcknowledgeMustBeUniq('Attribute "Acknowledge" must be False')
+            raise AcknowledgeMustBeFalse('Attribute "Acknowledge" must be False')
         if options.checksum:
-            raise ChecksumMustBeUniq('Attribute "Checksum" must be False')
+            raise ChecksumMustBeFalse('Attribute "Checksum" must be False')
         if not options.pack:
             logger.warning('Recommended set attribute "Pack" for more speed communication')
         if options.ip_address != settings.network.local_ip or options.port != settings.network.local_port:

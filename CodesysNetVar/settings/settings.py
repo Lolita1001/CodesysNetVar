@@ -50,7 +50,7 @@ class Storage(AdvancedSettings):
 
 
 class NVL(AdvancedSettings):
-    paths: list[FilePath] = Field(["external/exp.gvl"])
+    paths: list[Path] = Field(["external/exp.gvl"])
 
     class Config:
         env_prefix = "CNV_NVL___"

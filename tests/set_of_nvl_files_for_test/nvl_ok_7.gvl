@@ -1,0 +1,29 @@
+<GVL>
+  <Declarations><![CDATA[VAR_GLOBAL
+sinus: REAL;
+cosine: REAL;
+some_word:WORD;
+integer:INT;
+my_time:TIME;
+my_date : DATE;
+my_string20:(*STRING(40)*) STRING(20);
+my_array:ARRAY[0..4] OF INT;
+END_VAR]]></Declarations>
+  <NetvarSettings Protocol="UDP">
+    <ListIdentifier>7</ListIdentifier>
+    <Pack>True</Pack>
+    <Checksum>False</Checksum>
+    <Acknowledge>False</Acknowledge>
+    <CyclicTransmission>True</CyclicTransmission>
+    <TransmissionOnChange>False</TransmissionOnChange>
+    <TransmissionOnEvent>False</TransmissionOnEvent>
+    <Interval>T#1000ms</Interval>
+    <MinGap>T#1000ms</MinGap>
+    <EventVariable>
+    </EventVariable>
+    <ProtocolSettings>
+      <ProtocolSetting Name="Broadcast Adr." Value="192.168.56.1" />
+      <ProtocolSetting Name="Port" Value="1202" />
+    </ProtocolSettings>
+  </NetvarSettings>
+</GVL>

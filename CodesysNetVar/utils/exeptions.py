@@ -6,11 +6,11 @@ class IpAndPortWrong(AttributeError):
     """IP address and port must be equal with NVL"""
 
 
-class AcknowledgeMustBeUniq(AttributeError):
+class AcknowledgeMustBeFalse(AttributeError):
     """Attribute "Acknowledge" must be False"""
 
 
-class ChecksumMustBeUniq(AttributeError):
+class ChecksumMustBeFalse(AttributeError):
     """Attribute "Checksum" must be False"""
 
 
@@ -28,3 +28,7 @@ class NodeNotFound(ValueError):
 
 class DataWrongLen(ValueError):
     """The data has different length for this Data type"""
+
+
+class NVLFileNotFound(FileNotFoundError):
+    """NVL file not found"""
