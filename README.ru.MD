@@ -65,15 +65,15 @@
       </NetvarSettings>
     </GVL>
 
-5. Этот файл нужно скопировать в ``CodesysNetVar/external``
+5. Этот файл нужно скопировать в ```CodesysNetVar/external```
 
 6. Настройка проекта выполняется через переменные окружения или файл .env. 
-Файл .env должен находится в ``CodesysNetVar/settings``. Пароль от базы данных должен быть в виде 
-файла без расширения ``CNV_STORAGE___PASSWORD``, внутри должен быть только пароль, без пробелов, отступов и т.д. файл 
-должен быть в папке ``CodesysNetVar/settings/secrets``
+Файл .env должен находится в ```CodesysNetVar/settings```. Пароль от базы данных должен быть в виде 
+файла без расширения ```CNV_STORAGE___PASSWORD```, внутри должен быть только пароль, без пробелов, отступов и т.д. файл 
+должен быть в папке ```CodesysNetVar/settings/secrets```
 
 
-``.env``
+```.env```
 ```
 ### Settings
 
@@ -113,21 +113,15 @@ poetry run python main.py
 
 ## Инфо
 
-Поддерживаемые типы данных Codesys:
+1. Поддерживаемые типы данных Codesys:
     
-- Bool;
-- Byte;
-- Word;
-- DWord;
-- LWord;
-- Int;
-- DInt;
-- LInt;
-- UInt;
-- UDInt;
-- ULInt;
-- Real;
-- Time;
-- Date;
+- Bool, Byte, Word, DWord, LWord;
+- Int, DInt, LInt, UInt, UDInt, ULInt;
+- Real, LReal;
+- Time, Date;
 - String;
 - Array of supported data types;
+
+2. Поддерживается обмен с несколькими ПЛК одновременно. Для этого необходимо, что бы ID NVL у ПЛК были уникальны. 
+Сгенерированные конфигурационные файлы NVL нужно скопировать в ```CodesysNetVar/external``` и в ```.env``` параметр 
+```CNV_NVL___PATHS='["external/exp.gvl"]'``` должен содержать список из этих файлов

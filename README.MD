@@ -37,7 +37,7 @@ The file contains declaration of variables, communication settings.
 
 ![Setup_4](../assets/media/Nvl_4.jpg?raw=true)
 
-``configuration file``
+```configuration file```
 
     <GVL>
       <Declarations><![CDATA[VAR_GLOBAL
@@ -75,7 +75,7 @@ The .env file must be located in ```CodesysNetVar/settings```. The database pass
 file with no extension ```CNV_STORAGE___PASSWORD```, inside there should be only the password, no spaces, indents, etc. file 
 must be in the folder ```CodesysNetVar/settings/secrets```.
 
-``.env``
+```.env```
 ```
 ### Settings
 
@@ -115,21 +115,15 @@ poetry run python main.py
 
 ## Information
 
-Codesys data type supported:
+1. Codesys data type supported:
     
-- Bool;
-- Byte;
-- Word;
-- DWord;
-- LWord;
-- Int;
-- DInt;
-- LInt;
-- UInt;
-- UDInt;
-- ULInt;
-- Real;
-- Time;
-- Date;
+- Bool, Byte, Word, DWord, LWord;
+- Int, DInt, LInt, UInt, UDInt, ULInt;
+- Real, LReal;
+- Time, Date;
 - String;
 - Array of supported data types;
+
+2. Exchange with several PLCs at the same time is supported. This requires that the NVL IDs of the PLCs are 
+unique. The generated NVL configuration files must be copied into ```CodesysNetVar/external``` and in
+```.env``` the parameter ```CNV_NVL___PATHS='["external/exp1.gvl", "external/exp2.gvl"]'``` must list these files
