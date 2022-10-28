@@ -9,6 +9,11 @@ from sqlalchemy.types import TypeEngine
 
 from utils.exeptions import DataWrongLen
 
+MICROS_IN_MS = 1000
+MS_IN_SECOND = 1000
+MS_IN_MINUTE = 60 * MS_IN_SECOND
+MS_IN_HOUR = 3600 * MS_IN_SECOND
+
 
 class CType:
     def __init__(self, name: str):
@@ -159,10 +164,12 @@ class CTime(CType):
 
     def _put(self, value: bytes) -> None:
         int_value = int.from_bytes(value, "little")
-        hour = int_value // 3600
-        minute = (int_value - hour * 3600) // 60
-        second = int_value % 60
-        self.value = datetime.time(hour=hour, minute=minute, second=second)
+        modulo_h, hour = int_value % MS_IN_HOUR, int_value // MS_IN_HOUR
+        modulo_m, minute = modulo_h % MS_IN_MINUTE, modulo_h // MS_IN_MINUTE
+        modulo_s, second = modulo_m % MS_IN_SECOND, modulo_m // MS_IN_SECOND
+        millisecond = modulo_s % MS_IN_SECOND
+        microsecond = millisecond * MICROS_IN_MS
+        self.value = datetime.time(hour=hour, minute=minute, second=second, microsecond=microsecond)
         self.ts = datetime.datetime.now()
 
 

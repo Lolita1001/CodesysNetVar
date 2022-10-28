@@ -231,10 +231,13 @@ def test_dt_lreal_wrong_len(value: bytes):
         c_lreal.put(value)
 
 
-@given(st.times())
-def test_dt_time(value: datetime.time):
-    value = value.replace(microsecond=0)  # CTime don't have microseconds. CTime it is count of seconds since of day
-    int_value = value.hour * 3600 + value.minute * 60 + value.second
+@given(st.times(), st.integers(min_value=0, max_value=999))
+def test_dt_time(value: datetime.time, milliseconds: int):
+    # CTime don't have microseconds.
+    # CTime it's count of millisecond since of day.
+    value = value.replace(microsecond=milliseconds * 1000)
+    int_value = value.hour * 3600 + value.minute * 60 + value.second  # seconds
+    int_value = int_value * 1000 + milliseconds  # milliseconds
     c_time = CTime("some_name")
     binary_val = int_value.to_bytes(c_time.size, "little", signed=False)
     c_time.put(binary_val)
