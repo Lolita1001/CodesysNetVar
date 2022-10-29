@@ -121,9 +121,22 @@ poetry run python main.py
 - Int, DInt, LInt, UInt, UDInt, ULInt;
 - Real, LReal;
 - Time, Date;
-- String;
-- Array of supported data types;
+- Dimensional String(..);
+- Array of supported data types (only in **Pack** mode);
 
 2. Exchange with several PLCs at the same time is supported. This requires that the NVL IDs of the PLCs are 
 unique. The generated NVL configuration files must be copied into ```CodesysNetVar/external``` and in
 ```.env``` the parameter ```CNV_NVL___PATHS='["external/exp1.gvl", "external/exp2.gvl"]'``` must list these files
+
+
+## Roadmap
+
+- [ ] Support Arrays data type in **Unpack** mode
+- Support more codesys data type
+  - [ ] TIME_OF_DAY 
+  - [ ] DATE_AND_TIME
+  - [ ] LTime
+  - [ ] String without dimensional
+  - [ ] Structure
+- [ ] Bulk write to DB
+- [ ] other

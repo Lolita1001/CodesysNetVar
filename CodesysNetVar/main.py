@@ -10,7 +10,7 @@ from codesys.nvl_parser import NvlParser, NvlOptions
 from network.server import get_udp_thread_server, QueueMessage
 from network.parser import Rcv
 from data_packer import DataPacker
-
+from utils.statistics import statistic
 
 loger_setup()
 
@@ -44,21 +44,42 @@ class Main:
         self.udp_server_thread.start()
         logger.info("The UDP server starting")
         while True:
-            data_from_client: QueueMessage = self.mq_from_client.get()
-            logger.debug(
-                f"Get 1 message from the queue and queue has "
-                f"{self.mq_from_client.qsize()}/{self.mq_from_client.maxsize}"
-            )
-            logger.debug(data_from_client)
-            rcv = Rcv(message=data_from_client.message, client=data_from_client.client)
-            logger.debug(f"Result of parsing the message:\n{rcv.print()}")
-            self.data_packers[rcv.id_list].put_data(rcv)
-            self.mq_from_client.task_done()
+            self.cycle()
+
+    @statistic.timer(total=True)
+    def cycle(self) -> None:
+        data_from_client: QueueMessage = self.getter_messages_from_queue()
+        self.data_processing(data_from_client)
+        self.mq_from_client.task_done()
+
+    @statistic.timer("Delay of new packet from socket")
+    def getter_messages_from_queue(self) -> QueueMessage:
+        while True:
+            try:
+                data = self.mq_from_client.get(timeout=1)
+                break
+            except queue.Empty:
+                pass
+        logger.debug(
+            f"Get 1 message from the queue and queue has "
+            f"{self.mq_from_client.qsize()}/{self.mq_from_client.maxsize}\n" + str(data)
+        )
+        return data
+
+    @statistic.timer("Time of data processing")
+    def data_processing(self, data: QueueMessage) -> None:
+        rcv = Rcv(message=data.message, client=data.client)
+        logger.debug(f"Result of parsing the message:\n{rcv.print()}")
+        self.data_packers[rcv.id_list].put_data(rcv)
 
 
 if __name__ == "__main__":
     try:
         app = Main()
         app.run()
-    except Exception as ex:
+    except KeyboardInterrupt:
+        logger.info("\n" + statistic.print_stat_in_table())
+    except BaseException as ex:
         logger.exception(ex)
+    finally:
+        exit()

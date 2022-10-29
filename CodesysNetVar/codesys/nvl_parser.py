@@ -62,7 +62,9 @@ class NvlParser:
     @staticmethod
     def get_var_global_strings(declarations_text: str) -> list[str]:
         # search text between VAR_GLOBAL and END_VAR
-        re_result = re.search(r"(?<=VAR_GLOBAL).*(?=END_VAR)", declarations_text, re.S).group()
+        if not (_match := re.search(r"(?<=VAR_GLOBAL).*(?=END_VAR)", declarations_text, re.S)):
+            raise NodeNotFound(f"NVL configuration doesn't contain VAR_GLOBAL ... END_VAR")
+        re_result = _match.group()
         # each line do strip and filter zero line
         filtered_result = [f_line for f_line in (_line.strip() for _line in re_result.split("\n")) if len(f_line) > 0]
         return filtered_result

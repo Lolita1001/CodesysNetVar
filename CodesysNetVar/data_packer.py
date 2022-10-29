@@ -89,8 +89,8 @@ class DataPacker:
                 is_last_packet = self._put_data_pack(rcv.data_raw)
             else:
                 is_last_packet = self._put_data_unpack(rcv.n_package_in_list, rcv.data_raw)
-            logger.debug(f"DataPacker of {self.nvl.list_id} ID list: The data are put in Codesys class instances")
-            logger.debug("\n".join([c_type.__repr__() for c_type in self.c_types_declarations]))
+            logger.debug(f"DataPacker of {self.nvl.list_id} ID list: The data are put in Codesys class instances\n"
+                         "\n".join([c_type.__repr__() for c_type in self.c_types_declarations]))
             if is_last_packet and self.OrmModel:
                 self.write_to_orm()
         except Exception as ex:
