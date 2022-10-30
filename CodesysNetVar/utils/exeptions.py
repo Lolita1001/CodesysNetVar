@@ -32,3 +32,7 @@ class DataWrongLen(ValueError):
 
 class NVLFileNotFound(FileNotFoundError):
     """NVL file not found"""
+
+
+class OutOfRange(ValueError):
+    """Values of this data type are out of range"""

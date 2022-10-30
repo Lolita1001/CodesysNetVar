@@ -118,8 +118,8 @@ poetry run python main.py
 - Bool, Byte, Word, DWord, LWord;
 - Int, DInt, LInt, UInt, UDInt, ULInt;
 - Real, LReal;
-- Time, Date;
-- String;
+- Time, TIME_OF_DAY, Date;
+- String или String(..) с указанным размером;
 - Array of supported data types;
 
 2. Поддерживается обмен с несколькими ПЛК одновременно. Для этого необходимо, что бы ID NVL у ПЛК были уникальны. 
@@ -129,12 +129,12 @@ poetry run python main.py
 
 ## Планы
 
-- [ ] Поддержка типа данных массив в **Unpack** режиме
+- [x] Поддержка типа данных массив в **Unpack** режиме
 - Поддержка больше типо данных Codesys
-  - [ ] TIME_OF_DAY
+  - [x] TIME_OF_DAY
   - [ ] DATE_AND_TIME
   - [ ] LTime
-  - [ ] String without dimensional
+  - [x] String без указания размера
   - [ ] Structure
 - [ ] Запись в БД по несколько
 - [ ] остальное...

@@ -22,11 +22,12 @@ from codesys.data_types import (
     CReal,
     CLReal,
     CTime,
+    CTimeOfDay,
     CDate,
     CString,
     CArray,
 )
-from utils.exeptions import DataWrongLen
+from utils.exeptions import DataWrongLen, OutOfRange
 
 
 @given(st.binary(min_size=1, max_size=1))
@@ -249,6 +250,36 @@ def test_dt_time_wrong_len(value: bytes):
     c_time = CTime("some_name")
     with pytest.raises(DataWrongLen):
         c_time.put(value)
+
+
+@given(st.times(min_value=datetime.time(hour=0, minute=0, second=0),
+                max_value=datetime.time(hour=23, minute=59, second=59)),
+       st.integers(min_value=0, max_value=999))
+def test_dt_tod(value: datetime.time, milliseconds: int):
+    # CTimeOfDay don't have microseconds.
+    # CTimeOfDay it's count of millisecond since of day.
+    value = value.replace(microsecond=milliseconds * 1000)
+    int_value = value.hour * 3600 + value.minute * 60 + value.second  # seconds
+    int_value = int_value * 1000 + milliseconds  # milliseconds
+    c_tod = CTimeOfDay("some_name")
+    binary_val = int_value.to_bytes(c_tod.size, "little", signed=False)
+    c_tod.put(binary_val)
+    assert c_tod.value == value
+
+
+@given(st.binary().filter(lambda x: len(x) != 4))
+def test_dt_tod_wrong_len(value: bytes):
+    c_tod = CTimeOfDay("some_name")
+    with pytest.raises(DataWrongLen):
+        c_tod.put(value)
+
+
+@given(st.integers(min_value=86400000, max_value=186400000))
+def test_dt_tod_wrong_range(value: int):
+    c_tod = CTimeOfDay("some_name")
+    binary_val = value.to_bytes(c_tod.size, "little", signed=False)
+    with pytest.raises(OutOfRange):
+        c_tod.put(binary_val)
 
 
 @given(

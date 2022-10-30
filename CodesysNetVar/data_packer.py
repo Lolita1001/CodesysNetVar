@@ -1,3 +1,5 @@
+import re
+
 from loguru import logger
 
 from codesys.nvl_parser import NvlOptions, NvlDeclarations
@@ -15,6 +17,7 @@ from codesys.data_types import (
     CULInt,
     CReal,
     CTime,
+    CTimeOfDay,
     CDate,
     CString,
     CArray,
@@ -74,8 +77,11 @@ class DataPacker:
                 return CTime(name)
             case name, "DATE":
                 return CDate(name)
+            case name, "TIME_OF_DAY" | "TOD":
+                return CTimeOfDay(name)
             case name, other if "STRING" in other:
-                size = int(other[7:-1])  # 'STRING(20)'
+                _match = re.search(r"(?<=STRING\()\d{1,3}(?=\))", other, re.M)  # 'STRING(20)
+                size = int(_match.group()) if _match else 80
                 return CString(name, size)
             case name, base_type, type_arr if "ARRAY" in base_type:
                 start, end = list(map(int, base_type[6:-1].split("..")))  # 'ARRAY[0..4]'
@@ -90,7 +96,7 @@ class DataPacker:
             else:
                 is_last_packet = self._put_data_unpack(rcv.n_package_in_list, rcv.data_raw)
             logger.debug(f"DataPacker of {self.nvl.list_id} ID list: The data are put in Codesys class instances\n"
-                         "\n".join([c_type.__repr__() for c_type in self.c_types_declarations]))
+                         + "\n".join([c_type.__repr__() for c_type in self.c_types_declarations]))
             if is_last_packet and self.OrmModel:
                 self.write_to_orm()
         except Exception as ex:
@@ -98,9 +104,10 @@ class DataPacker:
             self.clear_data()
 
     def _put_data_unpack(self, number: int, data_raw: bytes) -> bool:
-        self.c_types_declarations[number].put(data_raw)
-        return number + 1 == self.c_types_declarations.__len__() and all(
-            [c_type.value for c_type in self.c_types_declarations]
+        elementary_c_types = self.c_types_declarations.get_elementary_type_list()
+        elementary_c_types[number].put(data_raw)
+        return number + 1 == len(elementary_c_types) and all(
+            [c_type.value for c_type in elementary_c_types]
         )
 
     def _put_data_pack(self, r_data: bytes) -> bool:

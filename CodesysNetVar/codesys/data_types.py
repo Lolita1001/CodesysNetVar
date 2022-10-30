@@ -7,7 +7,7 @@ from typing import TypeVar, Any
 from sqlalchemy import Boolean, LargeBinary, Integer, BigInteger, Float, Date, String, ARRAY, Time
 from sqlalchemy.types import TypeEngine
 
-from utils.exeptions import DataWrongLen
+from utils.exeptions import DataWrongLen, OutOfRange
 
 MICROS_IN_MS = 1000
 MS_IN_SECOND = 1000
@@ -173,6 +173,22 @@ class CTime(CType):
         self.ts = datetime.datetime.now()
 
 
+class CTimeOfDay(CTime):
+    def _put(self, value: bytes) -> None:
+        int_value = int.from_bytes(value, "little", signed=False)
+        if int_value > 86399999:
+            raise OutOfRange(f"The value is out of range."
+                             f"Codesys type {self.__class__.__name__} has to has values from 0 to 86399999."
+                             f"Input value is {int_value}.")
+        modulo_h, hour = int_value % MS_IN_HOUR, int_value // MS_IN_HOUR
+        modulo_m, minute = modulo_h % MS_IN_MINUTE, modulo_h // MS_IN_MINUTE
+        modulo_s, second = modulo_m % MS_IN_SECOND, modulo_m // MS_IN_SECOND
+        millisecond = modulo_s % MS_IN_SECOND
+        microsecond = millisecond * MICROS_IN_MS
+        self.value = datetime.time(hour=hour, minute=minute, second=second, microsecond=microsecond)
+        self.ts = datetime.datetime.now()
+
+
 class CDate(CType):
     def __init__(self, name: str):
         super().__init__(name)
@@ -201,17 +217,25 @@ class CArray(CType):
         super().__init__(name)
         self.c_type = c_type
         self.count = count
+        self.structure: list[CodesysType] = [self.c_type.__class__("_") for _ in range(self.count)]
+        self.__value = [None] * self.count
         self.size = self.c_type.size * self.count
         self.sql_alchemy_type = ARRAY(self.c_type.sql_alchemy_type)
 
     def _put(self, value: bytes) -> None:
         start = 0
-        self.value = []
-        for _ in range(self.count):
-            self.c_type.put(value[start: start + self.c_type.size])
-            self.value.append(self.c_type.value)
-            start += self.c_type.size
+        for ctype_instance in self.structure:
+            ctype_instance.put(value[start: start + ctype_instance.size])
+            start += ctype_instance.size
         self.ts = datetime.datetime.now()
+
+    @property
+    def value(self) -> list[Any]:
+        return [v.value for v in self.structure]
+
+    @value.setter
+    def value(self, value: list[Any]) -> None:
+        self.__value = value
 
 
 class CTypeDeclaration(list[CType]):
@@ -224,3 +248,18 @@ class CTypeDeclaration(list[CType]):
             if i.name == name:
                 return i
         return None
+
+    def get_elementary_type_list(self) -> list[CType]:
+        elementary_types = []
+        for i in self:
+            elementary_types.extend(self._get_elementary_recursive(i))
+        return elementary_types
+
+    def _get_elementary_recursive(self, c_type: CodesysType) -> list[CodesysType]:
+        ret_val = []
+        if structure := getattr(c_type, 'structure', None):
+            for i in structure:
+                ret_val.extend(self._get_elementary_recursive(i))
+        else:
+            ret_val.append(c_type)
+        return ret_val
