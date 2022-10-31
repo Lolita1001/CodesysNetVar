@@ -4,7 +4,7 @@ import struct
 from typing import TypeVar, Any
 
 
-from sqlalchemy import Boolean, LargeBinary, Integer, BigInteger, Float, Date, String, ARRAY, Time
+from sqlalchemy import Boolean, LargeBinary, Integer, BigInteger, Float, Date, String, ARRAY, Time, DateTime
 from sqlalchemy.types import TypeEngine
 
 from utils.exeptions import DataWrongLen, OutOfRange
@@ -198,6 +198,18 @@ class CDate(CType):
     def _put(self, value: bytes) -> None:
         n_seconds = int.from_bytes(value, "little")
         self.value = datetime.date.fromtimestamp(0) + datetime.timedelta(seconds=n_seconds)
+        self.ts = datetime.datetime.now()
+
+
+class CDateAndTime(CType):
+    def __init__(self, name: str):
+        super().__init__(name)
+        self.size = 4
+        self.sql_alchemy_type = DateTime
+
+    def _put(self, value: bytes):
+        n_seconds = int.from_bytes(value, 'little')
+        self.value = datetime.datetime(year=1970, month=1, day=1) + datetime.timedelta(seconds=n_seconds)
         self.ts = datetime.datetime.now()
 
 

@@ -24,6 +24,7 @@ from codesys.data_types import (
     CTime,
     CTimeOfDay,
     CDate,
+    CDateAndTime,
     CString,
     CArray,
 )
@@ -299,6 +300,24 @@ def test_dt_date_wrong_len(value: bytes):
     c_date = CDate("some_name")
     with pytest.raises(DataWrongLen):
         c_date.put(value)
+
+
+@given(st.datetimes(min_value=datetime.datetime(year=1970, month=1, day=1),
+                    max_value=datetime.datetime(year=2016, month=2, day=7)))  # 2106-02-07,06:28:15
+def test_dt_date_and_time(value: datetime.datetime):
+    value = value.replace(microsecond=0)  # CDateAndTime don't have microseconds.
+    int_value = int((value - datetime.datetime(year=1970, month=1, day=1)).total_seconds())
+    c_date_and_time = CDateAndTime("some_name")
+    binary_val = int_value.to_bytes(c_date_and_time.size, "little", signed=False)
+    c_date_and_time.put(binary_val)
+    assert c_date_and_time.value == value
+
+
+@given(st.binary().filter(lambda x: len(x) != 4))
+def test_dt_date_and_time_wrong_len(value: bytes):
+    c_date_and_time = CDateAndTime("some_name")
+    with pytest.raises(DataWrongLen):
+        c_date_and_time.put(value)
 
 
 @given(st.text(alphabet=string.ascii_letters, min_size=1), st.text(alphabet=string.ascii_letters, min_size=1))

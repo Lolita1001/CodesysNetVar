@@ -19,6 +19,7 @@ from codesys.data_types import (
     CTime,
     CTimeOfDay,
     CDate,
+    CDateAndTime,
     CString,
     CArray,
     CodesysType,
@@ -79,6 +80,8 @@ class DataPacker:
                 return CDate(name)
             case name, "TIME_OF_DAY" | "TOD":
                 return CTimeOfDay(name)
+            case name, "DATE_AND_TIME" | "DT":
+                return CDateAndTime(name)
             case name, other if "STRING" in other:
                 _match = re.search(r"(?<=STRING\()\d{1,3}(?=\))", other, re.M)  # 'STRING(20)
                 size = int(_match.group()) if _match else 80

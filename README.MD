@@ -120,7 +120,7 @@ poetry run python main.py
 - Bool, Byte, Word, DWord, LWord;
 - Int, DInt, LInt, UInt, UDInt, ULInt;
 - Real, LReal;
-- Time, TIME_OF_DAY, Date;
+- Time, Time of day, Date, Date and time;
 - String or Dimensional String(..);
 - Array of supported data types;
 
@@ -134,9 +134,9 @@ unique. The generated NVL configuration files must be copied into ```CodesysNetV
 - [x] Support Arrays data type in **Unpack** mode
 - Support more codesys data type
   - [x] TIME_OF_DAY 
-  - [ ] DATE_AND_TIME
+  - [x] DATE_AND_TIME
   - [ ] LTime
   - [x] String without dimensional
-  - [ ] Structure
+  - [ ] ~~Structure~~
 - [ ] Bulk write to DB
 - [ ] other
